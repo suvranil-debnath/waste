@@ -1,0 +1,29 @@
+# Render Deployment Configuration
+# https://render.com/docs/yaml-spec
+
+services:
+  - type: web
+    name: waste-management-api
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false  # Set this in Render dashboard
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 24h
+      - key: PORT
+        value: 5000
+      - key: GPS_VALIDATION_RADIUS
+        value: 50
+      - key: OPERATIONAL_HOURS_START
+        value: 06:00
+      - key: OPERATIONAL_HOURS_END
+        value: 18:00
+    healthCheckPath: /api/health
