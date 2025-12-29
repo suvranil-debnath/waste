@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['STATE_ADMIN', 'DISTRICT_ADMIN', 'BLOCK_ADMIN', 'GP_ADMIN', 'COLLECTION_AGENT'],
+      enum: ['STATE', 'DISTRICT', 'BLOCK', 'MUNICIPALITY', 'AGENT'],
       required: true,
     },
     // Administrative references based on role

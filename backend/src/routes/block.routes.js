@@ -5,9 +5,9 @@ import { requireRole } from '../middlewares/rbac.js';
 
 const router = express.Router();
 
-// All routes require authentication and BLOCK_ADMIN role
+// All routes require authentication and BLOCK role
 router.use(authenticate);
-router.use(requireRole(['BLOCK_ADMIN']));
+router.use(requireRole(['BLOCK']));
 
 /**
  * GET /api/block/municipalities

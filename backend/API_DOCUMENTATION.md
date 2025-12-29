@@ -2,8 +2,10 @@
 
 Complete API reference for the Smart Waste Management Backend System.
 
-**Base URL**: `http://localhost:5000`  
-**API Base**: `http://localhost:5000/api`
+**Production URL**: `https://waste-dcdi.onrender.com`  
+**Production API**: `https://waste-dcdi.onrender.com/api`
+
+**Local Development**: `http://localhost:5000/api`
 
 ---
 
@@ -66,7 +68,7 @@ Authorization: Bearer <your_jwt_token>
 **cURL Example**:
 ```bash
 # Login as GP Admin
-curl -X POST http://localhost:5000/api/auth/login \
+curl -X POST https://waste-dcdi.onrender.com/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "gpbn-gp1@admin.com",
@@ -75,7 +77,7 @@ curl -X POST http://localhost:5000/api/auth/login \
   }'
 
 # Login as Collection Agent
-curl -X POST http://localhost:5000/api/auth/login \
+curl -X POST https://waste-dcdi.onrender.com/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "agent1@waste.com",
@@ -84,7 +86,7 @@ curl -X POST http://localhost:5000/api/auth/login \
   }'
 
 # Login as Block Admin
-curl -X POST http://localhost:5000/api/auth/login \
+curl -X POST https://waste-dcdi.onrender.com/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "blockbn@admin.com",
@@ -129,7 +131,7 @@ Authorization: Bearer <token>
 
 **cURL Example**:
 ```bash
-curl http://localhost:5000/api/auth/session \
+curl https://waste-dcdi.onrender.com/api/auth/session \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -156,7 +158,7 @@ Authorization: Bearer <token>
 
 **cURL Example**:
 ```bash
-curl -X POST http://localhost:5000/api/auth/logout \
+curl -X POST https://waste-dcdi.onrender.com/api/auth/logout \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -209,7 +211,7 @@ Authorization: Bearer <gp_admin_token>
 
 **cURL Example**:
 ```bash
-curl http://localhost:5000/api/municipality/dashboard \
+curl https://waste-dcdi.onrender.com/api/municipality/dashboard \
   -H "Authorization: Bearer YOUR_GP_ADMIN_TOKEN"
 ```
 
@@ -247,7 +249,7 @@ Authorization: Bearer <gp_admin_token>
 
 **cURL Example**:
 ```bash
-curl http://localhost:5000/api/municipality/zones \
+curl https://waste-dcdi.onrender.com/api/municipality/zones \
   -H "Authorization: Bearer YOUR_GP_ADMIN_TOKEN"
 ```
 
@@ -299,18 +301,18 @@ Authorization: Bearer <gp_admin_token>
 **cURL Examples**:
 ```bash
 # Get all houses
-curl http://localhost:5000/api/municipality/houses \
+curl https://waste-dcdi.onrender.com/api/municipality/houses \
   -H "Authorization: Bearer YOUR_GP_ADMIN_TOKEN"
 
 # Filter by zone
-curl "http://localhost:5000/api/municipality/houses?zoneId=65a1b2c3d4e5f6g7h8i9j0k3" \
+curl "https://waste-dcdi.onrender.com/api/municipality/houses?zoneId=65a1b2c3d4e5f6g7h8i9j0k3" \
   -H "Authorization: Bearer YOUR_GP_ADMIN_TOKEN"
 
 # Filter by GPS status
-curl "http://localhost:5000/api/municipality/houses?gpsStatus=Active" \
+curl "https://waste-dcdi.onrender.com/api/municipality/houses?gpsStatus=Active" \
   -H "Authorization: Bearer YOUR_GP_ADMIN_TOKEN"
 
-curl "http://localhost:5000/api/municipality/houses?gpsStatus=Pending" \
+curl "https://waste-dcdi.onrender.com/api/municipality/houses?gpsStatus=Pending" \
   -H "Authorization: Bearer YOUR_GP_ADMIN_TOKEN"
 ```
 
@@ -363,7 +365,7 @@ Content-Type: application/json
 
 **cURL Example**:
 ```bash
-curl -X POST http://localhost:5000/api/municipality/houses \
+curl -X POST https://waste-dcdi.onrender.com/api/municipality/houses \
   -H "Authorization: Bearer YOUR_GP_ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -415,7 +417,7 @@ Content-Type: application/json
 
 **cURL Example**:
 ```bash
-curl -X PUT http://localhost:5000/api/municipality/houses/HOUSE_ID_HERE \
+curl -X PUT https://waste-dcdi.onrender.com/api/municipality/houses/HOUSE_ID_HERE \
   -H "Authorization: Bearer YOUR_GP_ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -471,11 +473,11 @@ Authorization: Bearer <gp_admin_token>
 **cURL Example**:
 ```bash
 # Get all staff
-curl http://localhost:5000/api/municipality/staff \
+curl https://waste-dcdi.onrender.com/api/municipality/staff \
   -H "Authorization: Bearer YOUR_GP_ADMIN_TOKEN"
 
 # Filter by zone
-curl "http://localhost:5000/api/municipality/staff?zoneId=ZONE_ID_HERE" \
+curl "https://waste-dcdi.onrender.com/api/municipality/staff?zoneId=ZONE_ID_HERE" \
   -H "Authorization: Bearer YOUR_GP_ADMIN_TOKEN"
 ```
 
@@ -518,7 +520,7 @@ Authorization: Bearer <gp_admin_token>
 
 **cURL Example**:
 ```bash
-curl http://localhost:5000/api/municipality/vans \
+curl https://waste-dcdi.onrender.com/api/municipality/vans \
   -H "Authorization: Bearer YOUR_GP_ADMIN_TOKEN"
 ```
 
@@ -577,15 +579,15 @@ Authorization: Bearer <gp_admin_token>
 **cURL Examples**:
 ```bash
 # Get all waste data
-curl http://localhost:5000/api/municipality/waste-data \
+curl https://waste-dcdi.onrender.com/api/municipality/waste-data \
   -H "Authorization: Bearer YOUR_GP_ADMIN_TOKEN"
 
 # Filter by date range
-curl "http://localhost:5000/api/municipality/waste-data?startDate=2024-12-01&endDate=2024-12-31" \
+curl "https://waste-dcdi.onrender.com/api/municipality/waste-data?startDate=2024-12-01&endDate=2024-12-31" \
   -H "Authorization: Bearer YOUR_GP_ADMIN_TOKEN"
 
 # Get today's data
-curl "http://localhost:5000/api/municipality/waste-data?startDate=$(date +%Y-%m-%d)" \
+curl "https://waste-dcdi.onrender.com/api/municipality/waste-data?startDate=$(date +%Y-%m-%d)" \
   -H "Authorization: Bearer YOUR_GP_ADMIN_TOKEN"
 ```
 
@@ -631,15 +633,15 @@ Authorization: Bearer <gp_admin_token>
 **cURL Examples**:
 ```bash
 # Get all attendance
-curl http://localhost:5000/api/municipality/attendance \
+curl https://waste-dcdi.onrender.com/api/municipality/attendance \
   -H "Authorization: Bearer YOUR_GP_ADMIN_TOKEN"
 
 # Get specific date
-curl "http://localhost:5000/api/municipality/attendance?date=2024-12-29" \
+curl "https://waste-dcdi.onrender.com/api/municipality/attendance?date=2024-12-29" \
   -H "Authorization: Bearer YOUR_GP_ADMIN_TOKEN"
 
 # Get date range
-curl "http://localhost:5000/api/municipality/attendance?startDate=2024-12-01&endDate=2024-12-31" \
+curl "https://waste-dcdi.onrender.com/api/municipality/attendance?startDate=2024-12-01&endDate=2024-12-31" \
   -H "Authorization: Bearer YOUR_GP_ADMIN_TOKEN"
 ```
 
@@ -685,7 +687,7 @@ Authorization: Bearer <block_admin_token>
 
 **cURL Example**:
 ```bash
-curl http://localhost:5000/api/block/municipalities \
+curl https://waste-dcdi.onrender.com/api/block/municipalities \
   -H "Authorization: Bearer YOUR_BLOCK_ADMIN_TOKEN"
 ```
 
@@ -717,7 +719,7 @@ Authorization: Bearer <block_admin_token>
 
 **cURL Example**:
 ```bash
-curl http://localhost:5000/api/block/overview \
+curl https://waste-dcdi.onrender.com/api/block/overview \
   -H "Authorization: Bearer YOUR_BLOCK_ADMIN_TOKEN"
 ```
 
@@ -748,7 +750,7 @@ Authorization: Bearer <block_admin_token>
 
 **cURL Example**:
 ```bash
-curl http://localhost:5000/api/block/staff-overview \
+curl https://waste-dcdi.onrender.com/api/block/staff-overview \
   -H "Authorization: Bearer YOUR_BLOCK_ADMIN_TOKEN"
 ```
 
@@ -801,7 +803,7 @@ Content-Type: application/json
 
 **cURL Example**:
 ```bash
-curl -X POST http://localhost:5000/api/agent/scan-house \
+curl -X POST https://waste-dcdi.onrender.com/api/agent/scan-house \
   -H "Authorization: Bearer YOUR_AGENT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -875,7 +877,7 @@ Content-Type: application/json
 
 **cURL Example**:
 ```bash
-curl -X POST http://localhost:5000/api/agent/accept-waste \
+curl -X POST https://waste-dcdi.onrender.com/api/agent/accept-waste \
   -H "Authorization: Bearer YOUR_AGENT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -939,7 +941,7 @@ Content-Type: application/json
 
 **cURL Example**:
 ```bash
-curl -X POST http://localhost:5000/api/agent/scan-dump \
+curl -X POST https://waste-dcdi.onrender.com/api/agent/scan-dump \
   -H "Authorization: Bearer YOUR_AGENT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -1000,11 +1002,11 @@ Authorization: Bearer <agent_token>
 **cURL Examples**:
 ```bash
 # Get all pending houses
-curl http://localhost:5000/api/agent/pending-houses \
+curl https://waste-dcdi.onrender.com/api/agent/pending-houses \
   -H "Authorization: Bearer YOUR_AGENT_TOKEN"
 
 # Get sorted by distance (route optimization)
-curl "http://localhost:5000/api/agent/pending-houses?latitude=22.5726&longitude=88.3639" \
+curl "https://waste-dcdi.onrender.com/api/agent/pending-houses?latitude=22.5726&longitude=88.3639" \
   -H "Authorization: Bearer YOUR_AGENT_TOKEN"
 ```
 
@@ -1048,7 +1050,7 @@ Authorization: Bearer <agent_token>
 
 **cURL Example**:
 ```bash
-curl http://localhost:5000/api/agent/today-summary \
+curl https://waste-dcdi.onrender.com/api/agent/today-summary \
   -H "Authorization: Bearer YOUR_AGENT_TOKEN"
 ```
 
@@ -1149,7 +1151,7 @@ Use these accounts for testing different roles:
 
 #### Step 1: Login as GP Admin
 ```bash
-curl -X POST http://localhost:5000/api/auth/login \
+curl -X POST https://waste-dcdi.onrender.com/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "gpbn-gp1@admin.com",
@@ -1162,7 +1164,7 @@ Save the token from response: `GP_TOKEN`
 
 #### Step 2: Get Zones (to get zoneId)
 ```bash
-curl http://localhost:5000/api/municipality/zones \
+curl https://waste-dcdi.onrender.com/api/municipality/zones \
   -H "Authorization: Bearer GP_TOKEN"
 ```
 
@@ -1170,7 +1172,7 @@ Save a `zoneId` from response.
 
 #### Step 3: Create House
 ```bash
-curl -X POST http://localhost:5000/api/municipality/houses \
+curl -X POST https://waste-dcdi.onrender.com/api/municipality/houses \
   -H "Authorization: Bearer GP_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -1186,7 +1188,7 @@ Save `houseId` and `qrCode` from response.
 
 #### Step 4: Login as Collection Agent
 ```bash
-curl -X POST http://localhost:5000/api/auth/login \
+curl -X POST https://waste-dcdi.onrender.com/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "agent1@waste.com",
@@ -1199,7 +1201,7 @@ Save the token: `AGENT_TOKEN`
 
 #### Step 5: Scan House QR
 ```bash
-curl -X POST http://localhost:5000/api/agent/scan-house \
+curl -X POST https://waste-dcdi.onrender.com/api/agent/scan-house \
   -H "Authorization: Bearer AGENT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -1211,7 +1213,7 @@ curl -X POST http://localhost:5000/api/agent/scan-house \
 
 #### Step 6: Accept Waste (First scan - sets house GPS)
 ```bash
-curl -X POST http://localhost:5000/api/agent/accept-waste \
+curl -X POST https://waste-dcdi.onrender.com/api/agent/accept-waste \
   -H "Authorization: Bearer AGENT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -1228,14 +1230,14 @@ curl -X POST http://localhost:5000/api/agent/accept-waste \
 
 #### Step 7: Get Pending Houses
 ```bash
-curl "http://localhost:5000/api/agent/pending-houses?latitude=22.5726&longitude=88.3639" \
+curl "https://waste-dcdi.onrender.com/api/agent/pending-houses?latitude=22.5726&longitude=88.3639" \
   -H "Authorization: Bearer AGENT_TOKEN"
 ```
 
 #### Step 8: Scan Dump Site (Complete shift)
 ```bash
 # First get dump site QR from GP Admin or seed data
-curl -X POST http://localhost:5000/api/agent/scan-dump \
+curl -X POST https://waste-dcdi.onrender.com/api/agent/scan-dump \
   -H "Authorization: Bearer AGENT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -1247,7 +1249,7 @@ curl -X POST http://localhost:5000/api/agent/scan-dump \
 
 #### Step 9: Check Today's Summary
 ```bash
-curl http://localhost:5000/api/agent/today-summary \
+curl https://waste-dcdi.onrender.com/api/agent/today-summary \
   -H "Authorization: Bearer AGENT_TOKEN"
 ```
 

@@ -13,9 +13,9 @@ import { validateGPSCoordinates } from '../middlewares/gps.js';
 
 const router = express.Router();
 
-// All routes require authentication and COLLECTION_AGENT role
+// All routes require authentication and AGENT role
 router.use(authenticate);
-router.use(requireRole(['COLLECTION_AGENT']));
+router.use(requireRole(['AGENT']));
 
 // QR Scanning
 router.post('/scan-house', validateQRScan, validateGPSCoordinates, scanHouse);

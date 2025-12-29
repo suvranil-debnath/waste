@@ -45,12 +45,12 @@ export const checkJurisdiction = (resourceLevel, resourceIdParam) => {
     const resourceId = req.params[resourceIdParam] || req.body[resourceIdParam] || req.query[resourceIdParam];
 
     // State Admin can access everything
-    if (role === 'STATE_ADMIN') {
+    if (role === 'STATE') {
       return next();
     }
 
     // District Admin can access blocks, GPs within their district
-    if (role === 'DISTRICT_ADMIN') {
+    if (role === 'DISTRICT') {
       if (resourceLevel === 'STATE') {
         return res.status(403).json({
           success: false,
@@ -62,7 +62,7 @@ export const checkJurisdiction = (resourceLevel, resourceIdParam) => {
     }
 
     // Block Admin can access GPs within their block
-    if (role === 'BLOCK_ADMIN') {
+    if (role === 'BLOCK') {
       if (resourceLevel === 'STATE' || resourceLevel === 'DISTRICT') {
         return res.status(403).json({
           success: false,
@@ -72,8 +72,8 @@ export const checkJurisdiction = (resourceLevel, resourceIdParam) => {
       return next();
     }
 
-    // GP Admin can only access their own GP data
-    if (role === 'GP_ADMIN') {
+    // Municipality Admin can only access their own municipality data
+    if (role === 'MUNICIPALITY') {
       if (resourceLevel !== 'GP' && resourceLevel !== 'HOUSE' && resourceLevel !== 'AGENT') {
         return res.status(403).json({
           success: false,
@@ -92,8 +92,8 @@ export const checkJurisdiction = (resourceLevel, resourceIdParam) => {
       return next();
     }
 
-    // Collection Agent can only access their own data
-    if (role === 'COLLECTION_AGENT') {
+    // Agent can only access their own data
+    if (role === 'AGENT') {
       if (resourceLevel !== 'AGENT') {
         return res.status(403).json({
           success: false,
@@ -125,24 +125,24 @@ export const enforceOwnJurisdiction = (req, res, next) => {
 
   // Attach jurisdiction filters to query based on role
   switch (role) {
-    case 'STATE_ADMIN':
+    case 'STATE':
       // No filter needed - can access all
       req.jurisdictionFilter = {};
       break;
 
-    case 'DISTRICT_ADMIN':
+    case 'DISTRICT':
       req.jurisdictionFilter = { districtId: req.user.districtId };
       break;
 
-    case 'BLOCK_ADMIN':
+    case 'BLOCK':
       req.jurisdictionFilter = { blockId: req.user.blockId };
       break;
 
-    case 'GP_ADMIN':
+    case 'MUNICIPALITY':
       req.jurisdictionFilter = { gpId: req.user.gpId };
       break;
 
-    case 'COLLECTION_AGENT':
+    case 'AGENT':
       req.jurisdictionFilter = { agentId: req.user._id };
       break;
 

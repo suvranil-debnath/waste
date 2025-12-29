@@ -16,9 +16,9 @@ import { validateCreateHouse, validateObjectId, validateDateRange } from '../mid
 
 const router = express.Router();
 
-// All routes require authentication and GP_ADMIN role
+// All routes require authentication and MUNICIPALITY role
 router.use(authenticate);
-router.use(requireRole(['GP_ADMIN']));
+router.use(requireRole(['MUNICIPALITY']));
 
 // Dashboard
 router.get('/dashboard', getDashboard);

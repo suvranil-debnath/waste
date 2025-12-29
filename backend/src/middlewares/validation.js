@@ -32,7 +32,7 @@ export const validateLogin = [
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters'),
   body('role')
-    .isIn(['STATE_ADMIN', 'DISTRICT_ADMIN', 'BLOCK_ADMIN', 'GP_ADMIN', 'COLLECTION_AGENT'])
+    .isIn(['STATE', 'DISTRICT', 'BLOCK', 'MUNICIPALITY', 'AGENT'])
     .withMessage('Valid role is required'),
   handleValidationErrors,
 ];
