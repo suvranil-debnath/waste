@@ -13,9 +13,13 @@ const app = express();
 
 // CORS configuration
 app.use(cors({
-  origin: config.server.env === 'production' 
-    ? ['https://your-frontend-domain.com'] 
-    : ['http://localhost:3000', 'http://localhost:3001'],
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://waste-dcdi.onrender.com',
+    'https://your-frontend-domain.com',
+    'https://your-frontend-domain.vercel.app'
+  ],
   credentials: true,
 }));
 
