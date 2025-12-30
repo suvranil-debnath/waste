@@ -1,4 +1,8 @@
 import { User } from '../models/User.js';
+import { State } from '../models/State.js';
+import { District } from '../models/District.js';
+import { Block } from '../models/Block.js';
+import { GramPanchayat } from '../models/GramPanchayat.js';
 
 /**
  * GET /api/profile

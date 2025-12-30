@@ -1,5 +1,10 @@
 import { User } from '../models/User.js';
 import { CollectionAgent } from '../models/CollectionAgent.js';
+import { State } from '../models/State.js';
+import { District } from '../models/District.js';
+import { Block } from '../models/Block.js';
+import { GramPanchayat } from '../models/GramPanchayat.js';
+import { Zone } from '../models/Zone.js';
 import { generateToken } from '../utils/jwtHelper.js';
 
 /**
@@ -39,7 +44,7 @@ export const loginUser = async (email, password, role) => {
   // Get additional info based on role
   let additionalData = {};
   
-  if (role === 'COLLECTION_AGENT') {
+  if (role === 'AGENT') {
     const agent = await CollectionAgent.findOne({ userId: user._id })
       .populate('zoneId')
       .populate('gpId');
@@ -70,7 +75,7 @@ export const getUserSession = async (userId) => {
 
   let additionalData = {};
 
-  if (user.role === 'COLLECTION_AGENT') {
+  if (user.role === 'AGENT') {
     const agent = await CollectionAgent.findOne({ userId: user._id })
       .populate('zoneId')
       .populate('gpId')
