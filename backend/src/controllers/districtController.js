@@ -4,6 +4,8 @@ import { CollectionAgent } from '../models/CollectionAgent.js';
 import { House } from '../models/House.js';
 import { Collection } from '../models/Collection.js';
 import { Attendance } from '../models/Attendance.js';
+import { Zone } from '../models/Zone.js';
+import { Van } from '../models/Van.js';
 
 /**
  * GET /api/district/overview
@@ -293,6 +295,332 @@ export const getDistrictWasteStats = async (req, res, next) => {
       data: {
         stats: wasteStats,
         recentCollections
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/district/municipalities
+ * Create a new municipality/GP
+ */
+export const createMunicipality = async (req, res, next) => {
+  try {
+    const districtId = req.user.districtId;
+    const { name, code, blockId, type, contactNumber, address } = req.body;
+
+    const block = await Block.findOne({ _id: blockId, districtId, isActive: true });
+    if (!block) {
+      return res.status(404).json({
+        success: false,
+        message: 'Block not found in your district'
+      });
+    }
+
+    const existing = await GramPanchayat.findOne({ code });
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        message: 'Municipality code already exists'
+      });
+    }
+
+    const municipality = await GramPanchayat.create({
+      name,
+      code,
+      blockId,
+      type: type || 'GRAM_PANCHAYAT',
+      contactNumber,
+      address
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Municipality created successfully',
+      data: municipality
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * PUT /api/district/municipalities/:id
+ * Update a municipality
+ */
+export const updateMunicipality = async (req, res, next) => {
+  try {
+    const districtId = req.user.districtId;
+    const { id } = req.params;
+    const { name, contactNumber, address, isActive } = req.body;
+
+    const blocks = await Block.find({ districtId, isActive: true }).select('_id');
+    const blockIds = blocks.map(b => b._id);
+
+    const municipality = await GramPanchayat.findOne({
+      _id: id,
+      blockId: { $in: blockIds }
+    });
+
+    if (!municipality) {
+      return res.status(404).json({
+        success: false,
+        message: 'Municipality not found in your district'
+      });
+    }
+
+    if (name) municipality.name = name;
+    if (contactNumber) municipality.contactNumber = contactNumber;
+    if (address) municipality.address = address;
+    if (isActive !== undefined) municipality.isActive = isActive;
+
+    await municipality.save();
+
+    res.json({
+      success: true,
+      message: 'Municipality updated successfully',
+      data: municipality
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET /api/district/complaints
+ * Get all complaints in the district
+ */
+export const getDistrictComplaints = async (req, res, next) => {
+  try {
+    const districtId = req.user.districtId;
+    const { status, category, priority, gpId } = req.query;
+
+    const { Complaint } = await import('../models/Complaint.js');
+
+    const filter = { districtId, isActive: true };
+    
+    if (status) filter.status = status;
+    if (category) filter.category = category;
+    if (priority) filter.priority = priority;
+    if (gpId) filter.gpId = gpId;
+
+    const complaints = await Complaint.find(filter)
+      .populate('gpId', 'name code')
+      .populate('reportedBy', 'name email')
+      .populate('assignedTo', 'name')
+      .populate('resolvedBy', 'name')
+      .sort({ createdAt: -1 })
+      .limit(200);
+
+    const stats = await Complaint.aggregate([
+      { $match: { districtId, isActive: true } },
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        complaints,
+        stats: {
+          total: complaints.length,
+          byStatus: stats.reduce((acc, curr) => {
+            acc[curr._id] = curr.count;
+            return acc;
+          }, {})
+        }
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/district/complaints
+ * Create a new complaint
+ */
+export const createComplaint = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const districtId = req.user.districtId;
+    const {
+      title,
+      description,
+      category,
+      priority,
+      reportedByName,
+      reportedByPhone,
+      houseId,
+      zoneId,
+      gpId,
+      blockId,
+      agentId,
+      vanId
+    } = req.body;
+
+    const { Complaint } = await import('../models/Complaint.js');
+
+    const complaint = await Complaint.create({
+      title,
+      description,
+      category,
+      priority: priority || 'MEDIUM',
+      reportedBy: userId,
+      reportedByName,
+      reportedByPhone,
+      houseId,
+      zoneId,
+      gpId,
+      blockId,
+      districtId,
+      agentId,
+      vanId
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Complaint registered successfully',
+      data: complaint
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * PUT /api/district/complaints/:id
+ * Update complaint status/resolution
+ */
+export const updateComplaint = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id;
+    const { status, assignedTo, resolution, comment } = req.body;
+
+    const { Complaint } = await import('../models/Complaint.js');
+
+    const complaint = await Complaint.findById(id);
+    if (!complaint) {
+      return res.status(404).json({
+        success: false,
+        message: 'Complaint not found'
+      });
+    }
+
+    if (status) complaint.status = status;
+    if (assignedTo) complaint.assignedTo = assignedTo;
+    if (resolution) {
+      complaint.resolution = resolution;
+      if (status === 'RESOLVED' || status === 'CLOSED') {
+        complaint.resolvedAt = new Date();
+        complaint.resolvedBy = userId;
+      }
+    }
+
+    if (comment) {
+      complaint.comments.push({
+        userId,
+        userName: req.user.name,
+        comment,
+        createdAt: new Date()
+      });
+    }
+
+    await complaint.save();
+
+    res.json({
+      success: true,
+      message: 'Complaint updated successfully',
+      data: complaint
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET /api/district/reports/summary
+ * Get comprehensive district summary report
+ */
+export const getDistrictSummaryReport = async (req, res, next) => {
+  try {
+    const districtId = req.user.districtId;
+    const { startDate, endDate } = req.query;
+
+    const blocks = await Block.find({ districtId, isActive: true }).select('_id');
+    const blockIds = blocks.map(b => b._id);
+
+    const gps = await GramPanchayat.find({
+      blockId: { $in: blockIds },
+      isActive: true
+    }).select('_id');
+    const gpIds = gps.map(gp => gp._id);
+
+    const dateFilter = {};
+    if (startDate || endDate) {
+      dateFilter.collectionDate = {};
+      if (startDate) dateFilter.collectionDate.$gte = new Date(startDate);
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        dateFilter.collectionDate.$lte = end;
+      }
+    }
+
+    const totalBlocks = blocks.length;
+    const totalMunicipalities = gps.length;
+    const totalZones = await Zone.countDocuments({ gpId: { $in: gpIds }, isActive: true });
+    const totalHouses = await House.countDocuments({ gpId: { $in: gpIds }, isActive: true });
+    const totalStaff = await CollectionAgent.countDocuments({ gpId: { $in: gpIds }, isActive: true });
+    const totalVans = await Van.countDocuments({ gpId: { $in: gpIds }, isActive: true });
+
+    const collectionStats = await Collection.aggregate([
+      {
+        $match: {
+          gpId: { $in: gpIds },
+          status: { $in: ['COLLECTED', 'DUMPED'] },
+          ...dateFilter
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalCollections: { $sum: 1 },
+          totalWaste: { $sum: '$totalWaste' },
+          solidWaste: { $sum: '$solidWaste' },
+          plasticWaste: { $sum: '$plasticWaste' },
+          organicWaste: { $sum: '$organicWaste' },
+          eWaste: { $sum: '$eWaste' }
+        }
+      }
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        infrastructure: {
+          totalBlocks,
+          totalMunicipalities,
+          totalZones,
+          totalHouses,
+          totalStaff,
+          totalVans
+        },
+        collections: collectionStats.length > 0 ? collectionStats[0] : {
+          totalCollections: 0,
+          totalWaste: 0,
+          solidWaste: 0,
+          plasticWaste: 0,
+          organicWaste: 0,
+          eWaste: 0
+        }
       }
     });
   } catch (error) {
