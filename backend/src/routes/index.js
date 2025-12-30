@@ -2,6 +2,7 @@ import express from 'express';
 import authRoutes from './auth.routes.js';
 import municipalityRoutes from './municipality.routes.js';
 import blockRoutes from './block.routes.js';
+import districtRoutes from './district.routes.js';
 import agentRoutes from './agent.routes.js';
 import profileRoutes from './profile.routes.js';
 
@@ -21,6 +22,7 @@ router.use('/auth', authRoutes);
 router.use('/profile', profileRoutes);
 router.use('/municipality', municipalityRoutes);
 router.use('/block', blockRoutes);
+router.use('/district', districtRoutes);
 router.use('/agent', agentRoutes);
 
 export default router;

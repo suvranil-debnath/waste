@@ -157,7 +157,30 @@ const seedDatabase = async () => {
       gpAdmins.push(admin);
     }
 
-    console.log(`✅ Created 1 State Admin, 1 District Admin, ${blockAdmins.length} Block Admins, ${gpAdmins.length} GP Admins\n`);
+    // Additional test users for easier testing
+    const testUserCentral = await User.create({
+      email: 'central@municipality.com',
+      password: 'test123',
+      name: 'Central Municipality Admin',
+      role: 'MUNICIPALITY',
+      stateId: westBengal._id,
+      districtId: kolkata._id,
+      blockId: gps[2].blockId,
+      gpId: gps[2]._id,
+    });
+
+    const testUserSouth = await User.create({
+      email: 'south@municipality.com',
+      password: 'test123',
+      name: 'South Municipality Admin',
+      role: 'MUNICIPALITY',
+      stateId: westBengal._id,
+      districtId: kolkata._id,
+      blockId: gps[4].blockId,
+      gpId: gps[4]._id,
+    });
+
+    console.log(`✅ Created 1 State Admin, 1 District Admin, ${blockAdmins.length} Block Admins, ${gpAdmins.length} GP Admins + 2 Test Accounts\n`);
 
     // 7. Create Vans (1 per zone)
     console.log('🚛 Creating Vans...');
@@ -256,6 +279,143 @@ const seedDatabase = async () => {
     }
     console.log(`✅ ${dumpSites.length} Dumping Sites created\n`);
 
+    // 10. Create Houses (10 per zone)
+    console.log('🏠 Creating Houses...');
+    const houses = [];
+    const { generateHouseQRData } = await import('../utils/qrGenerator.js');
+    
+    for (let i = 0; i < zones.length; i++) {
+      const zone = zones[i];
+      const { House } = await import('../models/House.js');
+      
+      for (let j = 1; j <= 10; j++) {
+        const houseNum = `H-${String(i * 10 + j).padStart(4, '0')}`;
+        const qrCode = generateHouseQRData(
+          new mongoose.Types.ObjectId().toString(),
+          houseNum,
+          zone.gpId.toString()
+        );
+        
+        const house = await House.create({
+          houseNumber: houseNum,
+          ownerName: `Owner ${i * 10 + j}`,
+          address: `${houseNum}, Street ${j}, Zone ${zone.name}`,
+          gpId: zone.gpId,
+          zoneId: zone._id,
+          qrCode,
+          latitude: 22.5726 + (i * 0.001) + (j * 0.0001),
+          longitude: 88.3639 + (i * 0.001) + (j * 0.0001),
+          isGPSActive: true,
+          totalMembers: Math.floor(Math.random() * 6) + 2,
+          assignedVanId: vans[i]._id,
+        });
+        houses.push(house);
+      }
+    }
+    console.log(`✅ ${houses.length} Houses created\n`);
+
+    // 11. Create Collection Logs (for today and yesterday)
+    console.log('📊 Creating Collection Logs...');
+    const { Collection } = await import('../models/Collection.js');
+    const collections = [];
+    
+    // Create collections for today (50% of houses)
+    const today = new Date();
+    today.setHours(10, 0, 0, 0);
+    
+    for (let i = 0; i < Math.floor(houses.length * 0.5); i++) {
+      const house = houses[i];
+      const agent = agents.find(a => a.zoneId.toString() === house.zoneId.toString());
+      
+      if (agent) {
+        const collection = await Collection.create({
+          houseId: house._id,
+          agentId: agent._id,
+          gpId: house.gpId,
+          agentLatitude: house.latitude,
+          agentLongitude: house.longitude,
+          solidWaste: Math.random() * 5 + 1,
+          plasticWaste: Math.random() * 2,
+          organicWaste: Math.random() * 3,
+          eWaste: Math.random() * 0.5,
+          totalWaste: 0, // Will be calculated by pre-save hook if exists
+          collectionDate: today,
+          status: i % 3 === 0 ? 'DUMPED' : 'COLLECTED',
+          dumpSiteId: i % 3 === 0 ? dumpSites.find(d => d.gpId.toString() === house.gpId.toString())?._id : null,
+          notes: 'Regular collection',
+        });
+        
+        // Calculate total waste
+        collection.totalWaste = collection.solidWaste + collection.plasticWaste + collection.organicWaste + collection.eWaste;
+        await collection.save();
+        collections.push(collection);
+      }
+    }
+    
+    // Create collections for yesterday (70% of houses)
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(10, 0, 0, 0);
+    
+    for (let i = 0; i < Math.floor(houses.length * 0.7); i++) {
+      const house = houses[i];
+      const agent = agents.find(a => a.zoneId.toString() === house.zoneId.toString());
+      
+      if (agent) {
+        const collection = await Collection.create({
+          houseId: house._id,
+          agentId: agent._id,
+          gpId: house.gpId,
+          agentLatitude: house.latitude,
+          agentLongitude: house.longitude,
+          solidWaste: Math.random() * 5 + 1,
+          plasticWaste: Math.random() * 2,
+          organicWaste: Math.random() * 3,
+          eWaste: Math.random() * 0.5,
+          totalWaste: 0,
+          collectionDate: yesterday,
+          status: 'DUMPED',
+          dumpSiteId: dumpSites.find(d => d.gpId.toString() === house.gpId.toString())?._id,
+          notes: 'Regular collection',
+        });
+        
+        collection.totalWaste = collection.solidWaste + collection.plasticWaste + collection.organicWaste + collection.eWaste;
+        await collection.save();
+        collections.push(collection);
+      }
+    }
+    console.log(`✅ ${collections.length} Collection Logs created\n`);
+
+    // 12. Create Attendance Records (for today)
+    console.log('📅 Creating Attendance Records...');
+    const { Attendance } = await import('../models/Attendance.js');
+    const attendanceRecords = [];
+    
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+    
+    for (const agent of agents) {
+      const checkIn = new Date();
+      checkIn.setHours(6, Math.floor(Math.random() * 30), 0, 0);
+      
+      const checkOut = new Date();
+      checkOut.setHours(14, Math.floor(Math.random() * 60), 0, 0);
+      
+      const attendance = await Attendance.create({
+        agentId: agent._id,
+        date: todayDate,
+        checkInTime: checkIn,
+        checkInLatitude: 22.5726 + Math.random() * 0.01,
+        checkInLongitude: 88.3639 + Math.random() * 0.01,
+        checkOutTime: checkOut,
+        checkOutLatitude: 22.5726 + Math.random() * 0.01,
+        checkOutLongitude: 88.3639 + Math.random() * 0.01,
+        status: 'PRESENT',
+      });
+      attendanceRecords.push(attendance);
+    }
+    console.log(`✅ ${attendanceRecords.length} Attendance Records created\n`);
+
     // Summary
     console.log('\n========================================');
     console.log('✅ DATABASE SEEDING COMPLETED!');
@@ -269,6 +429,9 @@ const seedDatabase = async () => {
     console.log(`   • ${vans.length} Vans`);
     console.log(`   • ${agents.length} Collection Agents`);
     console.log(`   • ${dumpSites.length} Dumping Sites`);
+    console.log(`   • ${houses.length} Houses`);
+    console.log(`   • ${collections.length} Collection Logs`);
+    console.log(`   • ${attendanceRecords.length} Attendance Records`);
     console.log('\n👤 Test User Accounts:');
     console.log('   STATE ADMIN:');
     console.log('      Email: state@admin.com');
@@ -279,12 +442,21 @@ const seedDatabase = async () => {
     console.log('   BLOCK ADMIN:');
     console.log('      Email: blockbn@admin.com');
     console.log('      Password: admin123');
-    console.log('   GP ADMIN:');
-    console.log('      Email: gpbn-gp1@admin.com');
-    console.log('      Password: admin123');
-    console.log('   COLLECTION AGENT:');
-    console.log('      Email: agent1@waste.com');
-    console.log('      Password: agent123');
+    console.log('   \n📍 MUNICIPALITY ADMINS:');
+    console.log('      1. North GP:');
+    console.log('         Email: gpbn-gp1@admin.com');
+    console.log('         Password: admin123');
+    console.log('      2. Central Municipality (TEST):');
+    console.log('         Email: central@municipality.com');
+    console.log('         Password: test123');
+    console.log('      3. South Municipality (TEST):');
+    console.log('         Email: south@municipality.com');
+    console.log('         Password: test123');
+    console.log('   \n👷 COLLECTION AGENTS:');
+    console.log('      1. Email: agent1@waste.com');
+    console.log('         Password: agent123');
+    console.log('      2. Email: agent.central@waste.com (TEST)');
+    console.log('         Password: test123');
     console.log('\n========================================\n');
 
     await disconnectDatabase();

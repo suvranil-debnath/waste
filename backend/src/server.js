@@ -96,6 +96,9 @@ const startServer = async () => {
       console.log('  - GET    /api/municipality/attendance');
       console.log('  - GET    /api/block/municipalities');
       console.log('  - GET    /api/block/overview');
+      console.log('  - GET    /api/district/overview');
+      console.log('  - GET    /api/district/blocks');
+      console.log('  - GET    /api/district/waste-stats');
       console.log('  - POST   /api/agent/scan-house');
       console.log('  - POST   /api/agent/accept-waste');
       console.log('  - POST   /api/agent/scan-dump');
